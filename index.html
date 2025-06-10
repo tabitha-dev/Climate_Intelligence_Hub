@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Intelligence Hub | A Unified Data Platform</title>
+    <meta name="description"
+        content="A single-page application providing real-time climate intelligence, news, and insights to foster environmental awareness and action.">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Main Stylesheet -->
+    <style>
+        /* --- Root Variables & Global Styles --- */
+        :root {
+            --primary-bg: #0a0f1f;
+            /* Deep Navy */
+            --secondary-bg: #1a2035;
+            /* Lighter Navy */
+            --accent-color: #3498db;
+            /* Bright Blue */
+            --primary-text: #e0e5f0;
+            /* Light Grey/Blue */
+            --secondary-text: #8899b3;
+            /* Muted Grey/Blue */
+            --border-color: #3a415a;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --border-radius: 8px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            /* AQI Colors */
+            --aqi-good: #2ecc71;
+            --aqi-moderate: #f1c40f;
+            --aqi-unhealthy-sensitive: #e67e22;
+            --aqi-unhealthy: #e74c3c;
+            --aqi-very-unhealthy: #9b59b6;
+            --aqi-hazardous: #7f5a2a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--primary-bg);
+            color: var(--primary-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* --- Page View Management --- */
+        .page-view {
+            display: none;
+        }
+
+        .page-view.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* --- Typography & Headings --- */
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            margin-bottom: 0.5em;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            margin-bottom: 0.75em;
+            color: var(--primary-text);
+        }
+
+        h3 {
+            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            margin-bottom: 0.5em;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle,
+        .section-header p {
+            font-size: clamp(1rem, 2vw, 1.15rem);
+            color: var(--secondary-text);
+            max-width: 650px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header p {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- Buttons & Controls --- */
+        .button,
+        .nav-button,
+        .search-button {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .button-primary {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .button-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .button-secondary {
+            background-color: transparent;
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .button-secondary:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        /* --- Main Hub Page Sections --- */
+        section {
+            padding: 6rem 0;
+        }
+
+        .hero-section {
+            background: linear-gradient(rgba(10, 15, 31, 0.95), rgba(10, 15, 31, 0.8)), url('https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=2000') no-repeat center center/cover;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-content .subtitle {
+            margin: 0 auto 2rem auto;
+        }
+
+        .mission-section {
+            background-color: var(--secondary-bg);
+        }
+
+        .grid-2-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .mission-image img {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .education-section {
+            background-color: var(--primary-bg);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .info-card {
+            background: var(--secondary-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            border-top: 4px solid var(--accent-color);
+        }
+
+        .info-card i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .info-card p {
+            color: var(--secondary-text);
+        }
+
+        .tools-section {
+            background-color: var(--secondary-bg);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tool-card {
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-color);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .tool-card h3 {
+            margin-bottom: 1rem;
+        }
+
+        .tool-card p {
+            color: var(--secondary-text);
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+
+        .action-section {
+            background-color: var(--primary-bg);
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .action-item {
+            text-align: center;
+        }
+
+        .action-item i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .action-item p {
+            color: var(--secondary-text);
+        }
+
+        .index-section {
+            background-color: var(--secondary-bg);
+        }
+
+        .index-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .index-card {
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+        }
+
+        .index-card h3 {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .index-card p {
+            color: var(--secondary-text);
+            font-size: 0.95rem;
+        }
+
+        .index-card a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* --- Sub-Pages General Styles --- */
+        .page-header {
+            text-align: center;
+            padding: 4rem 1rem;
+            background-color: var(--secondary-bg);
+        }
+
+        .page-header h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--secondary-text);
+            font-size: clamp(1rem, 2vw, 1.15rem);
+        }
+
+        #page-explorer .container,
+        #page-news .container,
+        #page-aqi .container,
+        #page-slr .container {
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        /* --- Explorer & AQI Specific Controls --- */
+        .controls-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: flex-end;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+
+        .control-group {
+            flex: 1 1 250px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            color: var(--secondary-text);
+        }
+
+        .control-group label i {
+            margin-right: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        .styled-select,
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--primary-bg);
+            color: var(--primary-text);
+            font-size: 1rem;
+        }
+
+        .styled-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233498db' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+        }
+
+        .styled-select:disabled {
+            background-color: #2a3149;
+            cursor: not-allowed;
+        }
+
+        .toggle-switch {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background-color: transparent;
+            color: var(--secondary-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:first-child {
+            border-right: 1px solid var(--border-color);
+        }
+
+        .toggle-btn.active {
+            background-color: var(--accent-color);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .toggle-btn:disabled {
+            cursor: not-allowed;
+            color: #55627a;
+        }
+
+        .toggle-btn.active:disabled {
+            background-color: #55627a;
+            color: #8899b3;
+        }
+
+        .chart-container {
+            background-color: var(--secondary-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .placeholder {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem;
+            color: var(--secondary-text);
+        }
+
+        .placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+            color: var(--border-color);
+        }
+
+        #aqi-search-form {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+        }
+
+        .search-button {
+            padding: 12px 24px;
+        }
+
+        .aqi-result-card {
+            margin-top: 2rem;
+            background-color: var(--secondary-bg);
+            border-left: 5px solid var(--border-color);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            display: none;
+        }
+
+        .aqi-result-card.Good {
+            border-color: var(--aqi-good);
+        }
+
+        .aqi-result-card.Moderate {
+            border-color: var(--aqi-moderate);
+        }
+
+        .aqi-result-card[class*="Unhealthy"] {
+            border-color: var(--aqi-unhealthy);
+        }
+
+        .aqi-result-card[class*="Very-Unhealthy"] {
+            border-color: var(--aqi-very-unhealthy);
+        }
+
+        .aqi-result-card.Hazardous {
+            border-color: var(--aqi-hazardous);
+        }
+
+        .aqi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .aqi-header h3 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .aqi-value {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .aqi-level {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .aqi-details p {
+            margin: 0.5rem 0;
+            color: var(--secondary-text);
+        }
+
+        .aqi-details strong {
+            color: var(--primary-text);
+        }
+
+        .external-link-box {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background-color: var(--secondary-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Sea Level Rise Specific --- */
+        .slr-content {
+            text-align: center;
+        }
+
+        .slr-stat {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            display: block;
+        }
+
+        .slr-label {
+            color: var(--secondary-text);
+        }
+
+        .slr-projections {
+            margin-top: 3rem;
+        }
+
+        .slr-slider-container {
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        .slr-slider-container label {
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        #slr-projection-year {
+            width: 100%;
+        }
+
+        #slr-projection-display {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        /* --- News Specific --- */
+        .news-layout {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 3rem;
+        }
+
+        .main-feed h2,
+        .sidebar-feed h2 {
+            font-size: 1.5rem;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .article-card {
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .article-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .article-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-content h3 a {
+            font-size: 1.15rem;
+            color: var(--primary-text);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .article-content h3 a:hover {
+            color: var(--accent-color);
+        }
+
+        .article-meta {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+        }
+
+        .ticker-list .ticker-item {
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ticker-list .ticker-item:last-child {
+            border-bottom: none;
+        }
+
+        .ticker-item a {
+            color: var(--primary-text);
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: block;
+            transition: color 0.3s ease;
+        }
+
+        .ticker-item a:hover {
+            color: var(--accent-color);
+        }
+
+        .ticker-item p {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            margin-top: 0.25rem;
+        }
+
+        /* --- Global Footer & Utilities --- */
+        .site-footer {
+            background-color: var(--secondary-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 3rem 0;
+            font-size: 0.9rem;
+        }
+
+        .page-footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .nav-button {
+            background-color: transparent;
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .nav-button:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            color: var(--secondary-text);
+        }
+
+        .footer-link {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .social-links a {
+            color: var(--primary-text);
+            text-decoration: none;
+            margin-left: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .social-links i {
+            margin-right: 0.5rem;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--secondary-text);
+        }
+
+        .api-source {
+            text-align: center;
+            margin-top: 2rem;
+            font-style: italic;
+            font-size: 0.85rem;
+            color: var(--secondary-text);
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 3em auto;
+            grid-column: 1 / -1;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            text-align: center;
+            color: #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            padding: 1em;
+            border-radius: var(--border-radius);
+            border: 1px solid #ff6b6b;
+            grid-column: 1 / -1;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 992px) {
+            .news-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-feed {
+                margin-top: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-2-col {
+                grid-template-columns: 1fr;
+            }
+
+            .mission-image {
+                order: -1;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 2rem;
+            }
+
+            .social-links a {
+                margin: 0 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Main Hub Content (Visible by default) -->
+    <div id="page-hub" class="page-view active">
+        <header class="hero-section">
+            <div class="container hero-content">
+                <h1>Climate Intelligence Hub</h1>
+                <p class="subtitle">Providing data-driven insights into our planet's climate. This project is dedicated
+                    to making complex environmental data accessible to all.</p>
+                <a href="#tools" class="button button-primary">Explore Data Tools</a>
+            </div>
+        </header>
+        <main>
+            <section id="mission" class="mission-section">
+                <div class="container grid-2-col">
+                    <div class="mission-text">
+                        <h2>The Mission: Action Through Awareness</h2>
+                        <p>This initiative aims to translate raw climate data into clear, understandable, and actionable
+                            intelligence. By providing access to real-time indicators and global news, the goal is to
+                            empower researchers, educators, and the public to make informed decisions for a sustainable
+                            future.</p>
+                    </div>
+                    <div class="mission-image">
+                        <img src="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=2000"
+                            alt="Vibrant view of Earth from space">
+                    </div>
+                </div>
+            </section>
+
+            <section class="education-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Understanding Climate Change</h2>
+                        <p>The foundational knowledge behind the data.</p>
+                    </div>
+
+                    <h3>Primary Causes</h3>
+                    <div class="info-grid" style="margin-bottom: 4rem;">
+                        <div class="info-card">
+                            <i class="fas fa-smog"></i>
+                            <h4>Greenhouse Gases</h4>
+                            <p>Emissions from burning fossil fuels (coal, oil, gas) for electricity, heat, and
+                                transportation are the main driver, trapping heat in the atmosphere.</p>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-tree"></i>
+                            <h4>Deforestation</h4>
+                            <p>Clearing forests reduces the Earth's ability to absorb CO2. Agriculture and land-use
+                                changes also contribute significantly to emissions.</p>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-industry"></i>
+                            <h4>Industrial Processes</h4>
+                            <p>Manufacturing, construction, and chemical processes release potent greenhouse gases and
+                                pollutants into the atmosphere.</p>
+                        </div>
+                    </div>
+
+                    <h3>Key Effects</h3>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <i class="fas fa-temperature-high"></i>
+                            <h4>Rising Temperatures</h4>
+                            <p>Global average temperatures are increasing, leading to more frequent and intense
+                                heatwaves and altering weather patterns.</p>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-water"></i>
+                            <h4>Sea Level Rise</h4>
+                            <p>Warming oceans expand and melting glaciers and ice sheets add water to the oceans,
+                                threatening coastal communities worldwide.</p>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-cloud-showers-heavy"></i>
+                            <h4>Extreme Weather</h4>
+                            <p>Climate change intensifies events like hurricanes, droughts, floods, and wildfires,
+                                making them more frequent and destructive.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tools" class="tools-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Data & News Gateways</h2>
+                        <p>Access specialized tools for exploring environmental data and news.</p>
+                    </div>
+                    <div class="tools-grid">
+                        <div class="tool-card">
+                            <i class="fas fa-chart-line card-icon"></i>
+                            <h3>Global Climate Explorer</h3>
+                            <p>Analyze and visualize historical monthly climate data for cities worldwide.</p>
+                            <button class="button button-secondary nav-button" data-target="page-explorer">Launch
+                                Explorer</button>
+                        </div>
+                        <div class="tool-card">
+                            <i class="fas fa-water card-icon"></i>
+                            <h3>Sea Level Projections</h3>
+                            <p>Visualize potential sea level rise scenarios based on the latest climate models.</p>
+                            <button class="button button-secondary nav-button" data-target="page-slr">View
+                                Projections</button>
+                        </div>
+                        <div class="tool-card">
+                            <i class="fas fa-wind card-icon"></i>
+                            <h3>Air Quality Index</h3>
+                            <p>Check the real-time Air Quality Index (AQI) for any city to understand local air
+                                pollution levels.</p>
+                            <button class="button button-secondary nav-button" data-target="page-aqi">Check AQI</button>
+                        </div>
+                        <div class="tool-card">
+                            <i class="fas fa-newspaper card-icon"></i>
+                            <h3>Consolidated News Feed</h3>
+                            <p>Stay informed with a centralized feed of the latest climate-related news.</p>
+                            <button class="button button-secondary nav-button" data-target="page-news">View
+                                News</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="action" class="action-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Take Action</h2>
+                        <p>Small changes can have a large collective impact. Here are ways you can contribute to a more
+                            sustainable future.</p>
+                    </div>
+                    <div class="action-grid">
+                        <div class="action-item">
+                            <i class="fas fa-home"></i>
+                            <h4>At Home</h4>
+                            <p>Reduce energy consumption, switch to renewable energy sources, minimize waste, and adopt
+                                a plant-rich diet.</p>
+                        </div>
+                        <div class="action-item">
+                            <i class="fas fa-users"></i>
+                            <h4>In Your Community</h4>
+                            <p>Support local, sustainable businesses. Participate in community clean-ups, tree planting,
+                                and advocate for green policies.</p>
+                        </div>
+                        <div class="action-item">
+                            <i class="fas fa-bullhorn"></i>
+                            <h4>Speak Up</h4>
+                            <p>Educate friends and family, contact public officials to demand climate action, and use
+                                your voice on social media to raise awareness.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Global Climate Explorer (Hidden by default) -->
+    <div id="page-explorer" class="page-view">
+        <header class="page-header">
+            <div class="container">
+                <h1>Global Climate Explorer</h1>
+                <p>Select a location to visualize historical monthly climate data.</p>
+            </div>
+        </header>
+        <main class="container">
+            <div class="controls-container">
+                <div class="control-group">
+                    <label for="countriesDropdown"><i class="fas fa-flag"></i> Country</label>
+                    <select id="countriesDropdown" class="styled-select" disabled>
+                        <option>Loading...</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="citiesDropdown"><i class="fas fa-city"></i> City</label>
+                    <select id="citiesDropdown" class="styled-select" disabled>
+                        <option>Select a country</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label><i class="fas fa-thermometer-half"></i> Unit</label>
+                    <div class="toggle-switch">
+                        <button id="celsiusBtn" class="toggle-btn active" disabled>°C</button>
+                        <button id="fahrenheitBtn" class="toggle-btn" disabled>°F</button>
+                    </div>
+                </div>
+            </div>
+            <div class="explorer-layout">
+                <div id="explorerResultContainer">
+                    <div class="placeholder"><i class="fas fa-chart-line"></i>
+                        <p>Your climate data visualizations will appear here.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="api-source">Powered by the climate-data.p.rapidapi.com API</p>
+        </main>
+        <footer class="page-footer">
+            <button class="nav-button" data-target="page-hub">&larr; Back to Hub</button>
+        </footer>
+    </div>
+
+    <!-- Sea Level Rise Page (Hidden by default) -->
+    <div id="page-slr" class="page-view">
+        <header class="page-header">
+            <div class="container">
+                <h1>Sea Level Rise Projections</h1>
+                <p>Understanding one of the most direct consequences of a warming planet.</p>
+            </div>
+        </header>
+        <main class="container slr-content">
+            <div class="grid-2-col">
+                <div>
+                    <span class="slr-stat" id="slr-rate">3.4</span>
+                    <span class="slr-label">mm / year (current rate)</span>
+                </div>
+                <div>
+                    <span class="slr-stat" id="slr-total">+97</span>
+                    <span class="slr-label">mm since 1993</span>
+                </div>
+            </div>
+            <p class="api-source" style="margin-top: 1rem;">Data Source: NASA / NOAA</p>
+
+            <div class="slr-projections">
+                <h3>Projection Simulator</h3>
+                <p>See the potential global mean sea level rise based on different emission scenarios from the IPCC.</p>
+                <div class="slr-slider-container">
+                    <label for="slr-projection-year">Projection Year: <span id="slr-year-label">2050</span></label>
+                    <input type="range" min="2030" max="2100" value="2050" step="10" id="slr-projection-year">
+                </div>
+                <div id="slr-projection-display">
+                    <!-- JS will populate this -->
+                </div>
+            </div>
+        </main>
+        <footer class="page-footer">
+            <button class="nav-button" data-target="page-hub">&larr; Back to Hub</button>
+        </footer>
+    </div>
+
+
+    <!-- Air Quality Index Page (Hidden by default) -->
+    <div id="page-aqi" class="page-view">
+        <header class="page-header">
+            <div class="container">
+                <h1>Air Quality Index (AQI)</h1>
+                <p>Enter a city name to get the current air quality data.</p>
+            </div>
+        </header>
+        <main class="container">
+            <form id="aqi-search-form">
+                <input type="text" id="aqi-city-input" class="search-input" placeholder="e.g., London, New York, Tokyo"
+                    required>
+                <button type="submit" class="search-button button-primary">Search</button>
+            </form>
+            <div id="aqiResultContainer">
+                <div class="placeholder"><i class="fas fa-wind"></i>
+                    <p>Air quality data will be shown here.</p>
+                </div>
+            </div>
+            <div class="external-link-box">
+                <p>For official US air quality forecasts and information, visit the official government source.</p>
+                <a href="https://www.airnow.gov/" target="_blank" rel="noopener noreferrer"
+                    class="button button-secondary">Visit AirNow.gov</a>
+            </div>
+            <p class="api-source">Powered by the World Air Quality Index project API</p>
+        </main>
+        <footer class="page-footer">
+            <button class="nav-button" data-target="page-hub">&larr; Back to Hub</button>
+        </footer>
+    </div>
+
+    <!-- Global Climate News (Hidden by default) -->
+    <div id="page-news" class="page-view">
+        <header class="page-header">
+            <div class="container">
+                <h1>Global Climate News</h1>
+                <p>A consolidated, real-time feed of climate change news from around the world.</p>
+            </div>
+        </header>
+        <main class="container">
+            <div class="news-layout">
+                <div class="main-feed">
+                    <h2>Featured Articles</h2>
+                    <div id="articleFeedContainer" class="article-grid">
+                        <div class="loader"></div>
+                    </div>
+                    <p class="api-source">Featured feed powered by Climate News Feed API</p>
+                </div>
+                <aside class="sidebar-feed">
+                    <h2>Live Ticker</h2>
+                    <div id="liveNewsContainer" class="ticker-list">
+                        <div class="loader"></div>
+                    </div>
+                    <p class="api-source">Ticker powered by Climate Change Live API</p>
+                </aside>
+            </div>
+        </main>
+        <footer class="page-footer">
+            <button class="nav-button" data-target="page-hub">&larr; Back to Hub</button>
+        </footer>
+    </div>
+
+    <!-- Global Footer for the entire site -->
+    <footer id="site-footer" class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>A personal project by <a href="https://code.tabitha.dev/" target="_blank" class="footer-link">Tabitha
+                        Khadse</a>. The code is open-source and available for review.</p>
+                <div class="social-links">
+                    <a href="https://github.com/tabitha-dev" target="_blank" aria-label="GitHub"><i
+                            class="fab fa-github"></i> GitHub</a>
+                    <a href="https://www.linkedin.com/in/tabitha-dev" target="_blank" aria-label="LinkedIn"><i
+                            class="fab fa-linkedin"></i> LinkedIn</a>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2025 Climate Intelligence Hub. All data is provided by third-party APIs.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Centralized API Configuration ---
+            const API_CONFIG = {
+                rapidApiKey: '71e3466119mshfcff9f6775e9a01p16c9ecjsn646561b6676e',
+                aqiApiToken: 'demo', // Free token for AQI search
+                hub: {
+                    url: 'https://real-time-climate-index.p.rapidapi.com/api/climate-data',
+                    host: 'real-time-climate-index.p.rapidapi.com'
+                },
+                explorer: {
+                    baseUrl: 'https://climate-data.p.rapidapi.com/api',
+                    host: 'climate-data.p.rapidapi.com'
+                },
+                aqi: {
+                    baseUrl: 'https://api.waqi.info/feed'
+                },
+                newsFeed: {
+                    url: 'https://climate-news-feed.p.rapidapi.com/?source=Nasa%20Climate&limit=9',
+                    host: 'climate-news-feed.p.rapidapi.com'
+                },
+                newsTicker: {
+                    url: 'https://climate-change-live452.p.rapidapi.com/news',
+                    host: 'climate-change-live452.p.rapidapi.com'
+                }
+            };
+
+            // --- DOM Element Cache ---
+            const elements = {
+                pageViews: document.querySelectorAll('.page-view'),
+                navButtons: document.querySelectorAll('.nav-button'),
+                globalFooter: document.getElementById('site-footer'),
+                hubContainer: document.getElementById('hubClimateDataContainer'),
+                explorer: {
+                    countriesDD: document.getElementById('countriesDropdown'),
+                    citiesDD: document.getElementById('citiesDropdown'),
+                    celsiusBtn: document.getElementById('celsiusBtn'),
+                    fahrenheitBtn: document.getElementById('fahrenheitBtn'),
+                    container: document.getElementById('explorerResultContainer'),
+                },
+                slr: {
+                    slider: document.getElementById('slr-projection-year'),
+                    yearLabel: document.getElementById('slr-year-label'),
+                    display: document.getElementById('slr-projection-display'),
+                },
+                aqi: {
+                    form: document.getElementById('aqi-search-form'),
+                    input: document.getElementById('aqi-city-input'),
+                    container: document.getElementById('aqiResultContainer')
+                },
+                news: {
+                    articleContainer: document.getElementById('articleFeedContainer'),
+                    tickerContainer: document.getElementById('liveNewsContainer'),
+                }
+            };
+
+            const initializedViews = new Set();
+            let explorerChart = null;
+
+            // --- Generic API Fetch Logic ---
+            const fetchAPI = async (url, options = {}) => {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`Request failed with status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Failed to fetch from ${url}:`, error);
+                    return null;
+                }
+            };
+
+            // --- Page Navigation Logic ---
+            const switchView = (targetId) => {
+                elements.globalFooter.style.display = (targetId === 'page-hub') ? 'block' : 'none';
+                elements.pageViews.forEach(view => view.classList.toggle('active', view.id === targetId));
+                window.scrollTo(0, 0);
+
+                if (!initializedViews.has(targetId)) {
+                    if (targetId === 'page-explorer') initExplorer();
+                    if (targetId === 'page-news') initNews();
+                    if (targetId === 'page-aqi') initAqi();
+                    if (targetId === 'page-slr') initSlr();
+                    initializedViews.add(targetId);
+                }
+            };
+
+            // --- Helper Functions ---
+            const getAqiLevel = (aqi) => {
+                if (aqi <= 50) return 'Good';
+                if (aqi <= 100) return 'Moderate';
+                if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+                if (aqi <= 200) return 'Unhealthy';
+                if (aqi <= 300) return 'Very Unhealthy';
+                return 'Hazardous';
+            };
+
+            // --- Initialization Functions ---
+            const initHub = () => {
+                const container = elements.hubContainer;
+                if (!container || container.children.length > 1) return;
+                container.innerHTML = '<div class="loader"></div>';
+                const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.hub.host}};
+                fetchAPI(API_CONFIG.hub.url, options).then(data => {
+                    container.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        container.innerHTML = `<p class="error-message">No climate index data available.</p>`;
+                        return;
+                    }
+                    data.flat().forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'index-card';
+                        const name = item.metadata?.name || 'Climate Index';
+                        const description = item.metadata?.shortDescription || item.metadata?.fullDescription || 'No description available.';
+                        const locationUrl = item.metadata?.location;
+                        card.innerHTML = `<h3>${name}</h3><p>${description}</p>${locationUrl ? `<a href="${locationUrl}" target="_blank" rel="noopener noreferrer">Source &rarr;</a>` : ''}`;
+                        container.appendChild(card);
+                    });
+                });
+            };
+
+            const initExplorer = () => {
+                const {countriesDD} = elements.explorer;
+                const url = `${API_CONFIG.explorer.baseUrl}/countrycitylist?LANG=en`;
+                const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.explorer.host}};
+                countriesDD.disabled = true;
+                fetchAPI(url, options).then(data => {
+                    if (data && data.Countries) {
+                        countriesDD.innerHTML = '<option value="">-- Select Country --</option>';
+                        data.Countries.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => countriesDD.add(new Option(c.name, c.COUNTRY)));
+                    }
+                }).finally(() => countriesDD.disabled = false);
+            };
+
+            const initAqi = () => { /* No initial data fetch needed, user-driven */};
+
+            const initSlr = () => {
+                const {slider, yearLabel, display} = elements.slr;
+                const projections = {
+                    2030: {low: 0.15, high: 0.25},
+                    2040: {low: 0.20, high: 0.35},
+                    2050: {low: 0.25, high: 0.50},
+                    2060: {low: 0.30, high: 0.65},
+                    2070: {low: 0.35, high: 0.85},
+                    2080: {low: 0.40, high: 1.05},
+                    2090: {low: 0.45, high: 1.30},
+                    2100: {low: 0.50, high: 1.50},
+                };
+
+                const updateProjection = () => {
+                    const year = slider.value;
+                    const data = projections[year];
+                    yearLabel.textContent = year;
+                    display.innerHTML = `Projected Rise: <strong>${data.low.toFixed(2)}m</strong> (low emissions) to <strong>${data.high.toFixed(2)}m</strong> (high emissions)`;
+                }
+
+                slider.addEventListener('input', updateProjection);
+                updateProjection(); // Initial call
+            };
+
+            const initNews = () => {
+                const {articleContainer, tickerContainer} = elements.news;
+                articleContainer.innerHTML = '<div class="loader"></div>';
+                const feedOptions = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.newsFeed.host}};
+                fetchAPI(API_CONFIG.newsFeed.url, feedOptions).then(data => {
+                    articleContainer.innerHTML = '';
+                    if (data && data.articles) {
+                        data.articles.forEach(article => {
+                            const card = document.createElement('div');
+                            card.className = 'article-card';
+                            card.innerHTML = `<a href="${article.url}" target="_blank" rel="noopener noreferrer"><img src="${article.thumbnail || 'https://images.unsplash.com/photo-1524282271389-95299341b523?q=80&w=1920'}" alt=""></a><div class="article-content"><h3><a href="${article.url}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3><p class="article-meta">Source: ${article.source}</p></div>`;
+                            articleContainer.appendChild(card);
+                        });
+                    } else {articleContainer.innerHTML = '<p class="error-message">Could not load articles.</p>';}
+                });
+
+                tickerContainer.innerHTML = '<div class="loader"></div>';
+                const tickerOptions = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.newsTicker.host}};
+                fetchAPI(API_CONFIG.newsTicker.url, tickerOptions).then(data => {
+                    tickerContainer.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.slice(0, 15).forEach(item => {
+                            const el = document.createElement('div');
+                            el.className = 'ticker-item';
+                            el.innerHTML = `<a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.title}</a><p>Source: ${item.source}</p>`;
+                            tickerContainer.appendChild(el);
+                        });
+                    } else {tickerContainer.innerHTML = '<p class="error-message">Could not load ticker.</p>';}
+                });
+            };
+
+            // --- One-Time Event Listener Setup ---
+            const setupEventListeners = () => {
+                elements.navButtons.forEach(button => button.addEventListener('click', () => switchView(button.dataset.target)));
+
+                // Explorer Listeners
+                const {countriesDD, citiesDD, celsiusBtn, fahrenheitBtn, container} = elements.explorer;
+                let isCelsius = true;
+                let currentClimateData = null;
+
+                const renderExplorerCharts = () => {
+                    if (explorerChart) explorerChart.destroy();
+                    container.innerHTML = '<div class="chart-container"><canvas id="climateChart"></canvas></div>';
+                    const ctx = document.getElementById('climateChart').getContext('2d');
+                    const labels = currentClimateData.map(m => m.TIME);
+                    const tempData = currentClimateData.map(m => isCelsius ? m.temp : (m.temp * 9 / 5 + 32).toFixed(1));
+                    const rainData = currentClimateData.map(m => m.accumulated_rain);
+
+                    explorerChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {type: 'line', label: `Avg Temp (°${isCelsius ? 'C' : 'F'})`, data: tempData, borderColor: 'rgba(231, 76, 60, 1)', backgroundColor: 'rgba(231, 76, 60, 0.2)', yAxisID: 'y-temp', tension: 0.3},
+                                {type: 'bar', label: 'Rainfall (mm)', data: rainData, backgroundColor: 'rgba(52, 152, 219, 0.6)', yAxisID: 'y-rain'}
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {legend: {labels: {color: 'white'}}},
+                            scales: {
+                                x: {ticks: {color: 'white'}},
+                                'y-temp': {type: 'linear', position: 'left', ticks: {color: 'white'}, grid: {color: 'rgba(255,255,255,0.1)'}},
+                                'y-rain': {type: 'linear', position: 'right', ticks: {color: 'white'}, grid: {drawOnChartArea: false}}
+                            }
+                        }
+                    });
+                };
+
+                countriesDD.addEventListener('change', () => {
+                    const countryCode = countriesDD.value;
+                    citiesDD.innerHTML = '<option>Select a country</option>';
+                    citiesDD.disabled = true;
+                    currentClimateData = null;
+                    if (explorerChart) explorerChart.destroy();
+                    container.innerHTML = `<div class="placeholder"><i class="fas fa-chart-line"></i><p>Your climate data visualizations will appear here.</p></div>`;
+
+                    if (countryCode) {
+                        citiesDD.innerHTML = '<option>Loading...</option>';
+                        const url = `${API_CONFIG.explorer.baseUrl}/countrycitylist?COUNTRY=${countryCode}&LANG=en`;
+                        const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.explorer.host}};
+                        citiesDD.disabled = true;
+                        fetchAPI(url, options).then(data => {
+                            if (data && data.Cities) {
+                                citiesDD.innerHTML = '<option value="">-- Select City --</option>';
+                                data.Cities.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => citiesDD.add(new Option(c.name, c.wmo)));
+                            }
+                        }).finally(() => citiesDD.disabled = false);
+                    }
+                });
+
+                citiesDD.addEventListener('change', () => {
+                    const cityWMO = citiesDD.value;
+                    if (cityWMO) {
+                        container.innerHTML = '<div class="loader"></div>';
+                        const url = `${API_CONFIG.explorer.baseUrl}/getclimatedata?WMO=${cityWMO}&LANG=en`;
+                        const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.explorer.host}};
+                        fetchAPI(url, options).then(data => {
+                            if (data && data.ClimateDataMonth) {
+                                currentClimateData = data.ClimateDataMonth;
+                                renderExplorerCharts();
+                                celsiusBtn.disabled = false; fahrenheitBtn.disabled = false;
+                            } else {
+                                container.innerHTML = `<p class="error-message">Could not retrieve data for this city.</p>`;
+                            }
+                        });
+                    }
+                });
+
+                celsiusBtn.addEventListener('click', () => {isCelsius = true; celsiusBtn.classList.add('active'); fahrenheitBtn.classList.remove('active'); if (currentClimateData) renderExplorerCharts();});
+                fahrenheitBtn.addEventListener('click', () => {isCelsius = false; fahrenheitBtn.classList.add('active'); celsiusBtn.classList.remove('active'); if (currentClimateData) renderExplorerCharts();});
+
+                // AQI Form Listener
+                elements.aqi.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const city = elements.aqi.input.value.trim();
+                    if (!city) return;
+                    const container = elements.aqi.container;
+                    container.innerHTML = '<div class="loader"></div>';
+                    const url = `${API_CONFIG.aqi.baseUrl}/${city}/?token=${API_CONFIG.aqiApiToken}`;
+                    fetchAPI(url).then(response => {
+                        if (response && response.status === 'ok') {
+                            const data = response.data;
+                            const aqi = data.aqi;
+                            const level = getAqiLevel(aqi);
+
+                            container.innerHTML = `
+                                <div class="aqi-result-card ${level.replace(/\s+/g, '-')}">
+                                    <div class="aqi-header">
+                                        <h3>${data.city.name}</h3>
+                                        <div style="text-align: right;">
+                                            <div class="aqi-value">${aqi}</div>
+                                            <div class="aqi-level">${level}</div>
+                                        </div>
+                                    </div>
+                                    <div class="aqi-details">
+                                        <p><strong>Dominant Pollutant:</strong> ${data.dominentpol ? data.dominentpol.toUpperCase() : 'N/A'}</p>
+                                        <p><strong>Temperature:</strong> ${data.iaqi.t?.v}°C</p>
+                                        <p><strong>Last Updated:</strong> ${new Date(data.time.s).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            `;
+                            container.querySelector('.aqi-result-card').style.display = 'block';
+                        } else {
+                            container.innerHTML = `<p class="error-message">Could not find air quality data for "${city}". Please check the spelling or try a nearby major city.</p>`;
+                        }
+                    });
+                });
+            };
+
+            // --- Initial Application Start ---
+            setupEventListeners();
+            initHub();
+            initializedViews.add('page-hub');
+        });
+    </script>
+</body>
+
+</html>
