@@ -818,7 +818,7 @@
             .social-links a {
                 margin: 0 1rem;
             }
-            .aqi-input-form .control-group {
+            .aqi-search-form .search-input {
                 flex: 1 1 100%; /* Stack inputs on very small screens */
             }
         }
@@ -1069,13 +1069,13 @@
         <header class="page-header">
             <div class="container">
                 <h1>Air Quality Index (AQI)</h1>
-                <p>Enter a city name to get the current air quality data.</p>
+                <p>Enter a Zip Code to get the current air quality forecast.</p>
             </div>
         </header>
         <main class="container">
             <form id="aqi-search-form">
-                <input type="text" id="aqi-city-input" class="search-input" placeholder="e.g., London, New York, Tokyo"
-                    required>
+                <input type="text" id="aqi-zip-input" class="search-input" placeholder="e.g., 90210, 10001"
+                    required pattern="^\d{5}(?:[-\s]\d{4})?$" title="Enter a 5-digit US Zip Code">
                 <button type="submit" class="search-button button-primary">Search</button>
             </form>
             <div id="aqiResultContainer">
@@ -1088,7 +1088,7 @@
                 <a href="https://www.airnow.gov/" target="_blank" rel="noopener noreferrer"
                     class="button button-secondary">Visit AirNow.gov</a>
             </div>
-            <p class="api-source">Powered by the World Air Quality Index project API</p>
+            <p class="api-source">Powered by AirNow.gov</p>
         </main>
         <footer class="page-footer">
             <button class="nav-button" data-target="page-hub">&larr; Back to Hub</button>
@@ -1151,7 +1151,7 @@
             // --- Centralized API Configuration ---
             const API_CONFIG = {
                 rapidApiKey: '71e3466119mshfcff9f6775e9a01p16c9ecjsn646561b6676e',
-                aqiApiToken: 'demo', // Free token for AQI search
+                aqiApiToken: 'FC07A364-4CE4-4F8D-AA10-723566EFEFE0', // User's AirNow API key
                 hub: {
                     url: 'https://real-time-climate-index.p.rapidapi.com/api/climate-data',
                     host: 'real-time-climate-index.p.rapidapi.com'
@@ -1161,7 +1161,7 @@
                     host: 'climate-data.p.rapidapi.com'
                 },
                 aqi: {
-                    baseUrl: 'https://api.waqi.info/feed'
+                    forecastBaseUrl: 'https://www.airnowapi.org/aq/forecast/zipCode/',
                 },
                 newsFeed: {
                     url: 'https://climate-news-feed.p.rapidapi.com/?source=Nasa%20Climate&limit=9',
@@ -1193,7 +1193,7 @@
                 },
                 aqi: {
                     form: document.getElementById('aqi-search-form'),
-                    input: document.getElementById('aqi-city-input'),
+                    input: document.getElementById('aqi-zip-input'), // Changed to aqi-zip-input
                     container: document.getElementById('aqiResultContainer')
                 },
                 news: {
@@ -1207,10 +1207,17 @@
 
             // --- Generic API Fetch Logic ---
             const fetchAPI = async (url, options = {}) => {
+                console.log("Fetching URL:", url); // Debug: Log the URL being fetched
                 try {
                     const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`Request failed with status: ${response.status}`);
-                    return await response.json();
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error(`HTTP error! Status: ${response.status}, Response: ${errorText}`); // Debug: Log detailed HTTP error
+                        throw new Error(`Request failed with status: ${response.status} - ${errorText}`);
+                    }
+                    const data = await response.json();
+                    console.log("API Response Data:", data); // Debug: Log the received data
+                    return data;
                 } catch (error) {
                     console.error(`Failed to fetch from ${url}:`, error);
                     return null;
@@ -1279,7 +1286,10 @@
                 }).finally(() => countriesDD.disabled = false);
             };
 
-            const initAqi = () => { /* No initial data fetch needed, user-driven */};
+            const initAqi = () => {
+                // Initialize placeholder for the forecast section
+                elements.aqi.container.innerHTML = `<div class="placeholder"><i class="fas fa-wind"></i><p>Air quality data will be shown here.</p></div>`;
+            };
 
             const initSlr = () => {
                 const {slider, yearLabel, display} = elements.slr;
@@ -1315,7 +1325,7 @@
                         data.articles.forEach(article => {
                             const card = document.createElement('div');
                             card.className = 'article-card';
-                            card.innerHTML = `<a href="${article.url}" target="_blank" rel="noopener noreferrer"><img src="${article.thumbnail || 'https://images.unsplash.com/photo-1524282271389-95299341b523?q=80&w=1920'}" alt=""></a><div class="article-content"><h3><a href="${article.url}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3><p class="article-meta">Source: ${article.source}</p></div>`;
+                            card.innerHTML = `<a href="${article.url}" target="_blank" rel="noopener noreferrer"><img src="${article.thumbnail || 'https://placehold.co/400x200/3a415a/e0e5f0?text=No+Image'}" alt=""></a><div class="article-content"><h3><a href="${article.url}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3><p class="article-meta">Source: ${article.source}</p></div>`;
                             articleContainer.appendChild(card);
                         });
                     } else {articleContainer.innerHTML = '<p class="error-message">Could not load articles.</p>';}
@@ -1421,41 +1431,84 @@
                 celsiusBtn.addEventListener('click', () => {isCelsius = true; celsiusBtn.classList.add('active'); fahrenheitBtn.classList.remove('active'); if (currentClimateData) renderExplorerCharts();});
                 fahrenheitBtn.addEventListener('click', () => {isCelsius = false; fahrenheitBtn.classList.add('active'); celsiusBtn.classList.remove('active'); if (currentClimateData) renderExplorerCharts();});
 
-                // AQI Form Listener
-                elements.aqi.form.addEventListener('submit', (e) => {
+                // AQI Form Listener (AirNow API - Forecast by Zip Code)
+                elements.aqi.form.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const city = elements.aqi.input.value.trim();
-                    if (!city) return;
-                    const container = elements.aqi.container;
-                    container.innerHTML = '<div class="loader"></div>';
-                    const url = `${API_CONFIG.aqi.baseUrl}/${city}/?token=${API_CONFIG.aqiApiToken}`;
-                    fetchAPI(url).then(response => {
-                        if (response && response.status === 'ok') {
-                            const data = response.data;
-                            const aqi = data.aqi;
-                            const level = getAqiLevel(aqi);
+                    const zipCode = elements.aqi.input.value.trim(); // Now expecting a zip code
+                    if (!zipCode) return;
 
-                            container.innerHTML = `
-                                <div class="aqi-result-card ${level.replace(/\s+/g, '-')}">
-                                    <div class="aqi-header">
-                                        <h3>${data.city.name}</h3>
-                                        <div style="text-align: right;">
-                                            <div class="aqi-value">${aqi}</div>
-                                            <div class="aqi-level">${level}</div>
+                    const container = elements.aqi.container;
+                    container.innerHTML = '<div class="loader"></div>'; // Show loader
+
+                    try {
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                        const day = String(today.getDate()).padStart(2, '0');
+                        const formattedToday = `${year}-${month}-${day}`;
+
+                        // Use AirNow forecast API endpoint
+                        const aqiUrl = `https://www.airnowapi.org/aq/forecast/zipCode/?zipCode=${zipCode}&date=${formattedToday}&distance=50&format=application/json&API_KEY=${API_CONFIG.aqiApiToken}`;
+                        
+                        console.log("AQI Forecast API URL (AirNow):", aqiUrl); // Debug: Log the full AQI API URL
+
+                        const aqiData = await fetchAPI(aqiUrl);
+
+                        if (aqiData && aqiData.length > 0) {
+                            // Find the highest AQI among forecasts for today or nearest future
+                            const todayForecasts = aqiData.filter(forecast => forecast.DateForecast === formattedToday);
+                            let primaryAqiEntry = null;
+
+                            if (todayForecasts.length > 0) {
+                                primaryAqiEntry = todayForecasts[0];
+                                for (const forecast of todayForecasts) {
+                                    if (forecast.AQI > primaryAqiEntry.AQI) {
+                                        primaryAqiEntry = forecast;
+                                    }
+                                }
+                            } else {
+                                // If no forecast for today, take the earliest available forecast
+                                aqiData.sort((a, b) => new Date(a.DateForecast) - new Date(b.DateForecast));
+                                primaryAqiEntry = aqiData[0]; 
+                            }
+
+                            if (primaryAqiEntry) {
+                                const aqi = primaryAqiEntry.AQI;
+                                const level = primaryAqiEntry.Category?.Name || 'Unknown';
+                                const pollutant = primaryAqiEntry.ParameterName;
+                                const reportingArea = primaryAqiEntry.ReportingArea;
+                                const stateCode = primaryAqiEntry.StateCode;
+                                const displayDate = primaryAqiEntry.DateForecast;
+                                const discussion = primaryAqiEntry.Discussion || 'No discussion available.';
+
+                                container.innerHTML = `
+                                    <div class="aqi-result-card ${level.replace(/\s+/g, '-')}">
+                                        <div class="aqi-header">
+                                            <h3>${reportingArea}, ${stateCode}</h3>
+                                            <div style="text-align: right;">
+                                                <div class="aqi-value">${aqi}</div>
+                                                <div class="aqi-level">${level}</div>
+                                            </div>
+                                        </div>
+                                        <div class="aqi-details">
+                                            <p><strong>Type:</strong> Forecast</p>
+                                            <p><strong>Date:</strong> ${displayDate}</p>
+                                            <p><strong>Dominant Pollutant:</strong> ${pollutant.toUpperCase()}</p>
+                                            <p><strong>Discussion:</strong> ${discussion}</p>
                                         </div>
                                     </div>
-                                    <div class="aqi-details">
-                                        <p><strong>Dominant Pollutant:</strong> ${data.dominentpol ? data.dominentpol.toUpperCase() : 'N/A'}</p>
-                                        <p><strong>Temperature:</strong> ${data.iaqi.t?.v}°C</p>
-                                        <p><strong>Last Updated:</strong> ${new Date(data.time.s).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            `;
-                            container.querySelector('.aqi-result-card').style.display = 'block';
+                                `;
+                                container.querySelector('.aqi-result-card').style.display = 'block';
+                            } else {
+                                container.innerHTML = `<p class="error-message">No current or upcoming AQI forecast data available for Zip Code "${zipCode}".</p>`;
+                            }
                         } else {
-                            container.innerHTML = `<p class="error-message">Could not find air quality data for "${city}". Please check the spelling or try a nearby major city.</p>`;
+                            container.innerHTML = `<p class="error-message">No current AQI forecast data available for Zip Code "${zipCode}". Please check the Zip Code.</p>`;
                         }
-                    });
+                    } catch (error) {
+                        console.error("Error fetching AQI forecast data:", error);
+                        container.innerHTML = `<p class="error-message">An error occurred while fetching AQI forecast data. Please try again.</p>`;
+                    }
                 });
             };
 
