@@ -67,6 +67,8 @@
             width: 90%;
             max-width: 1200px;
             margin: 0 auto;
+            /* Add horizontal padding for smaller screens */
+            padding: 0 1rem; 
         }
 
         img {
@@ -299,6 +301,7 @@
             font-size: 2.5rem;
             color: var(--accent-color);
             margin-bottom: 1rem;
+            display: block;
         }
 
         .action-item p {
@@ -815,6 +818,9 @@
             .social-links a {
                 margin: 0 1rem;
             }
+            .aqi-input-form .control-group {
+                flex: 1 1 100%; /* Stack inputs on very small screens */
+            }
         }
     </style>
 </head>
@@ -877,7 +883,10 @@
                         </div>
                     </div>
 
-                    <h3>Key Effects</h3>
+                    <div class="section-header">
+                        <h3>Key Effects</h3>
+                        <p>The widespread consequences of a changing climate.</p>
+                    </div>
                     <div class="info-grid">
                         <div class="info-card">
                             <i class="fas fa-temperature-high"></i>
@@ -1369,6 +1378,8 @@
                     const countryCode = countriesDD.value;
                     citiesDD.innerHTML = '<option>Select a country</option>';
                     citiesDD.disabled = true;
+                    celsiusBtn.disabled = true;
+                    fahrenheitBtn.disabled = true;
                     currentClimateData = null;
                     if (explorerChart) explorerChart.destroy();
                     container.innerHTML = `<div class="placeholder"><i class="fas fa-chart-line"></i><p>Your climate data visualizations will appear here.</p></div>`;
@@ -1391,9 +1402,11 @@
                     const cityWMO = citiesDD.value;
                     if (cityWMO) {
                         container.innerHTML = '<div class="loader"></div>';
+                        celsiusBtn.disabled = true;
+                        fahrenheitBtn.disabled = true;
                         const url = `${API_CONFIG.explorer.baseUrl}/getclimatedata?WMO=${cityWMO}&LANG=en`;
                         const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.explorer.host}};
-                        fetchAPI(url, options).then(data => {
+                        fetchAPI(url).then(data => {
                             if (data && data.ClimateDataMonth) {
                                 currentClimateData = data.ClimateDataMonth;
                                 renderExplorerCharts();
