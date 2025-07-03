@@ -1274,14 +1274,20 @@
             };
 
             const initExplorer = () => {
+                console.log("Explorer: Initializing..."); // Debug: Explorer init
                 const {countriesDD} = elements.explorer;
                 const url = `${API_CONFIG.explorer.baseUrl}/countrycitylist?LANG=en`;
                 const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.explorer.host}};
                 countriesDD.disabled = true;
+                console.log("Explorer: Fetching countries from:", url); // Debug: Country fetch URL
                 fetchAPI(url, options).then(data => {
+                    console.log("Explorer: Countries API Response:", data); // Debug: Country API response
                     if (data && data.Countries) {
                         countriesDD.innerHTML = '<option value="">-- Select Country --</option>';
                         data.Countries.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => countriesDD.add(new Option(c.name, c.COUNTRY)));
+                    } else {
+                        countriesDD.innerHTML = '<option>Error loading countries</option>';
+                        elements.explorer.container.innerHTML = `<p class="error-message">Error loading countries for explorer.</p>`;
                     }
                 }).finally(() => countriesDD.disabled = false);
             };
@@ -1385,6 +1391,7 @@
                 };
 
                 countriesDD.addEventListener('change', () => {
+                    console.log("Explorer: Country dropdown changed."); // Debug: Country dropdown event
                     const countryCode = countriesDD.value;
                     citiesDD.innerHTML = '<option>Select a country</option>';
                     citiesDD.disabled = true;
@@ -1399,16 +1406,22 @@
                         const url = `${API_CONFIG.explorer.baseUrl}/countrycitylist?COUNTRY=${countryCode}&LANG=en`;
                         const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.explorer.host}};
                         citiesDD.disabled = true;
+                        console.log("Explorer: Fetching cities from:", url); // Debug: City fetch URL
                         fetchAPI(url, options).then(data => {
+                            console.log("Explorer: Cities API Response:", data); // Debug: City API response
                             if (data && data.Cities) {
                                 citiesDD.innerHTML = '<option value="">-- Select City --</option>';
                                 data.Cities.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => citiesDD.add(new Option(c.name, c.wmo)));
+                            } else {
+                                citiesDD.innerHTML = '<option>No cities found</option>';
+                                container.innerHTML = `<p class="error-message">No cities found for the selected country.</p>`;
                             }
                         }).finally(() => citiesDD.disabled = false);
                     }
                 });
 
                 citiesDD.addEventListener('change', () => {
+                    console.log("Explorer: City dropdown changed."); // Debug: City dropdown event
                     const cityWMO = citiesDD.value;
                     if (cityWMO) {
                         container.innerHTML = '<div class="loader"></div>';
@@ -1416,7 +1429,9 @@
                         fahrenheitBtn.disabled = true;
                         const url = `${API_CONFIG.explorer.baseUrl}/getclimatedata?WMO=${cityWMO}&LANG=en`;
                         const options = {headers: {'X-RapidAPI-Key': API_CONFIG.rapidApiKey, 'X-RapidAPI-Host': API_CONFIG.explorer.host}};
-                        fetchAPI(url).then(data => {
+                        console.log("Explorer: Fetching climate data from:", url); // Debug: Climate data fetch URL
+                        fetchAPI(url, options).then(data => {
+                            console.log("Explorer: Climate Data API Response:", data); // Debug: Climate data API response
                             if (data && data.ClimateDataMonth) {
                                 currentClimateData = data.ClimateDataMonth;
                                 renderExplorerCharts();
@@ -1425,6 +1440,12 @@
                                 container.innerHTML = `<p class="error-message">Could not retrieve data for this city.</p>`;
                             }
                         });
+                    } else {
+                        currentClimateData = null;
+                        if (explorerChart) explorerChart.destroy();
+                        container.innerHTML = `<div class="placeholder"><i class="fas fa-chart-line"></i><p>Your climate data visualizations will appear here.</p></div>`;
+                        celsiusBtn.disabled = true;
+                        fahrenheitBtn.disabled = true;
                     }
                 });
 
@@ -1448,7 +1469,7 @@
                         const formattedToday = `${year}-${month}-${day}`;
 
                         // Use AirNow forecast API endpoint
-                        const aqiUrl = `https://www.airnowapi.org/aq/forecast/zipCode/?zipCode=${zipCode}&date=${formattedToday}&distance=50&format=application/json&API_KEY=${API_CONFIG.aqiApiToken}`;
+                        const aqiUrl = `${API_CONFIG.aqi.forecastBaseUrl}?zipCode=${zipCode}&date=${formattedToday}&distance=50&format=application/json&API_KEY=${API_CONFIG.aqiApiToken}`;
                         
                         console.log("AQI Forecast API URL (AirNow):", aqiUrl); // Debug: Log the full AQI API URL
 
