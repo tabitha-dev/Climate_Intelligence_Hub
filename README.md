@@ -1,118 +1,64 @@
-<div align="center">
-  <h1 align="center">Climate Intelligence Hub</h1>
-  <p align="center">
-    A data-driven dashboard providing insights into our planet's climate.
-    <br />
-    <br />
-    <a href="https://tabitha-dev.github.io/Climate_Intelligence_Hub/"><strong>View Live Site »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/tabitha-dev/Climate_Intelligence_Hub/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/tabitha-dev/Climate_Intelligence_Hub/issues">Request Feature</a>
-  </p>
-</div>
+# Climate Intelligence Hub
 
-<p align="center">
-  <a href="https://github.com/tabitha-dev/Climate_Intelligence_Hub/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
-  </a>
-  <a href="https://github.com/tabitha-dev/Climate_Intelligence_Hub/issues">
-    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="Contributions welcome">
-  </a>
-</p>
+A modern, accessible, source-first climate education dashboard. Built with **HTML, CSS, vanilla JavaScript and Chart.js**, hosted on GitHub Pages with no frontend build step, account requirement or paid API key.
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-this-project">About This Project</a></li>
-    <li><a href="#key-features">Key Features</a></li>
-    <li><a href="#built-with">Built With</a></li>
-    <li><a href="#getting-started">Getting Started</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
+**Live site:** https://tabitha-dev.github.io/Climate_Intelligence_Hub/  
+**Source:** https://github.com/tabitha-dev/Climate_Intelligence_Hub
 
----
+## What you can explore
 
-## About This Project
+- **Historical weather explorer:** Search a city and view annual mean near-surface temperatures and annual precipitation totals, aggregated from Open-Meteo's ERA5 historical daily weather reanalysis for 2015–2024 or 2021–2025. These are *modeled historical estimates*, not raw station measurements or global climate trends.
+- **Sea-level scenarios:** Compare **published IPCC AR6 likely global mean sea-level rise ranges**, relative to 1995–2014. The two supported years are 2050 and 2100, with very low emissions (SSP1-1.9) and very high emissions (SSP5-8.5). **These are not local flood maps.**
+- **U.S. AQI-scale modeled forecast:** Enter a U.S. city or 5-digit ZIP code to view modeled AQI, PM2.5 and PM10. Model estimates may differ from nearby AirNow monitoring stations.
+- **Source library:** Direct links to NASA, NOAA climate.gov and IPCC in place of discontinued/failed free live-news feeds.
+- **Accessible charts and tables:** Chart.js is optional for display; historical numerical data is also provided in an accessible table. °C/°F switch updates both.
 
-The **Climate Intelligence Hub** is a comprehensive, single-page web application designed to make critical environmental data accessible and understandable to everyone. It aggregates and visualizes information from multiple APIs, providing insights into climate trends, air quality, and the latest environmental news.
+## Why the free API implementation changed
 
-This project was built to serve as a centralized dashboard for climate awareness, empowering researchers, educators, and the public to make informed decisions for a sustainable future.
+The former RapidAPI climate and news endpoints no longer worked reliably. The project had also embedded RapidAPI and AirNow API credentials in browser code. The new version **does not contain those keys or call those endpoints**. As the previous code remains in public Git history, **the former API keys should be revoked** with their issuers even if their free subscriptions stopped working.
 
-## Key Features
+### Free data sources
 
-* **✨ My Climate Snapshot:** A personalized dashboard that uses geolocation to display the user's local Air Quality Index (AQI) upon loading.
-* **📊 Interactive Data Visualization:** The Global Climate Explorer and CO₂ Time-Lapse tools use Chart.js to create responsive and easy-to-understand charts.
-* **🔍 Multi-API Integration:** Aggregates data from several sources to provide a holistic view of climate data, news, and air quality.
-* **📚 Educational Content:** Includes dedicated sections that explain the core causes and effects of climate change and provide actionable steps for users.
-* **📱 Fully Responsive Design:** A modern, single-page interface that works seamlessly across desktops, tablets, and mobile devices.
-* **🚀 Pure Vanilla Stack:** Built with fundamental web technologies—no frameworks needed—making it lightweight, fast, and easy to maintain.
+- Historical weather: [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api), ERA5 reanalysis — CC BY 4.0 attribution applies.
+- Air quality: [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api), modeled forecasts on the U.S. AQI scale. For official monitoring and health information use [AirNow.gov](https://www.airnow.gov/).
+- Sea level: [IPCC AR6 Synthesis Report Summary for Policymakers](https://www.ipcc.ch/report/ar6/syr/summary-for-policymakers/), likely range relative to 1995–2014.
+- ZIP centroid lookup: [Zippopotam.us](https://docs.zippopotam.us/docs/getting-started/), based on GeoNames.
+- City search: [Open-Meteo Geocoding](https://open-meteo.com/en/docs/geocoding-api).
 
-## Built With
+Open-Meteo's keyless free tier is intended for non-commercial use with fair-use limits; higher-volume or commercial deployments may require a paid plan. Data and API access can be temporarily unavailable. This site does not silently replace unavailable values with fabricated numbers.
 
-This website is built entirely with client-side technologies, making it perfect for static hosting on platforms like GitHub Pages.
+## Privacy and behavior
 
-<p align="left">
-  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML"><img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5"></a>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS"><img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3"></a>
-  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript"></a>
-  <a href="https://www.chartjs.org/"><img src="https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white" alt="Chart.js"></a>
-</p>
+Location is **entered by the visitor**; no geolocation permission is requested. The entered city or ZIP and resulting coordinates are sent to the relevant public API providers to retrieve data. The app does not currently save household data or synchronize between devices. Third-party font and chart-script CDNs may receive standard network requests.
 
-## Getting Started
+This is an educational tool, not a professional local climate-risk model, medical recommendation, or personalized flooding prediction.
 
-To get a local copy up and running, follow these simple steps.
+## SEO / AEO / accessibility
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/tabitha-dev/Climate_Intelligence_Hub.git](https://github.com/tabitha-dev/Climate_Intelligence_Hub.git)
-    ```
+The site contains meaningful static content and FAQs, page metadata, canonical URL, sitemap, robots.txt, Open Graph social image, WebApplication structured data and source attribution. The layout responds to desktop and mobile widths, respects reduced motion, uses keyboard focus styles and has explicitly labeled forms. Historical charts have a data-table alternative. A full manual screen-reader / WCAG 2.2 AA audit is still required before certifying compliance. Search metadata does not guarantee indexing or visibility in AI answers.
 
-2.  **Navigate to the project directory:**
-    ```bash
-    cd Climate_Intelligence_Hub
-    ```
+## Run locally
 
-3.  **Open `index.html` in your browser:**
-    You can simply double-click the `index.html` file, or if you have a local server extension (like Live Server for VS Code), you can use that to view the site.
-
-### API Key Configuration
-
-To use the application with your own data limits, you will need to get a free API key from [RapidAPI](https://rapidapi.com/).
-
-Once you have your key, open the `index.html` file and locate the `API_CONFIG` object within the `<script>` tag at the bottom of the file. Replace the placeholder key with your own:
-
-```javascript
-const API_CONFIG = {
-    rapidApiKey: 'YOUR_RAPIDAPI_KEY_HERE', // <--- REPLACE THIS
-    aqiApiToken: 'demo', 
-    // ... rest of the config
-};
+```bash
+git clone https://github.com/tabitha-dev/Climate_Intelligence_Hub.git
+cd Climate_Intelligence_Hub
+python -m http.server 8000
 ```
 
-## Contributing
+Open http://localhost:8000. No Node build or API key is needed to browse; the charts need the Chart.js CDN, and external API data requires internet access.
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+### Browser QA
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+```bash
+python -m pip install playwright==1.57.0
+python -m playwright install chromium
+npm install --no-save axe-core@4.10.3
+python scripts/qa_responsive.py
+python scripts/qa_accessibility.py
+```
 
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+Run these in a separate terminal while the HTTP server is running. Tests use intercepted sample API payloads to validate the UI deterministically; they **do not** certify the current uptime of external data sources.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` file for more information.
-
-## Contact
-
-Tabitha Khadse - [tabitha@ieee.org](mailto:tabitha@ieee.org)
-
-Project Link: [https://github.com/tabitha-dev/Climate_Intelligence_Hub](https://github.com/tabitha-dev/Climate_Intelligence_Hub)
+Review the repository's license status before reuse.
