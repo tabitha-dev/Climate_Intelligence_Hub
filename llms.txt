@@ -1,0 +1,14 @@
+# Climate Intelligence Hub
+
+Project: independent accessible educational climate data dashboard.
+URL: https://tabitha-dev.github.io/Climate_Intelligence_Hub/
+Source: https://github.com/tabitha-dev/Climate_Intelligence_Hub
+
+## Data sources and cautions
+- Historical local weather: daily temperature and precipitation from Open-Meteo's ERA5 historical reanalysis (modeled estimates, not direct station measurements), aggregated by year for 2015–2024 or 2021–2025.
+- Sea-level rise: IPCC Sixth Assessment Report summary, likely global mean changes relative to 1995–2014. By 2050: 0.15–0.23m under SSP1-1.9 and 0.20–0.29m under SSP5-8.5. By 2100: 0.28–0.55m and 0.63–1.01m, respectively. Not local flooding predictions.
+- U.S. air quality: modeled current AQI-scale forecasts from Open-Meteo, not official monitoring station readings. Official U.S. source: https://www.airnow.gov/
+- News: direct links to NASA, NOAA climate.gov and IPCC; no live headlines or invented data.
+
+## Limits
+Free noncommercial APIs may have rate limits, coverage gaps or downtime. No paid API key is exposed; no automatic location permission requests. The site's search only sends a user-entered location to public lookup/data providers. Visual charts have accompanying numerical tables or explanations. SEO metadata does not ensure search ranking or AI citation.
