@@ -51,6 +51,7 @@ async def main():
    assert await page.locator("#air-category").inner_text()=="Good"
    assert not errors,(label,errors)
    if label in ("desktop","phone","narrow"):
+    await page.evaluate("window.scrollTo(0,0)")
     await page.screenshot(path=str(OUT/(label+"-homepage.png")),full_page=False)
    results.append({"viewport":label,"width":width,"layout":"pass","historical":"pass","sea":"pass","aqi":"pass","errors":errors})
    await ctx.close()
