@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://tabitha-dev.github.io/Climate_Intelligence_Hub/sitemap.xml
