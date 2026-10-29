@@ -12,7 +12,10 @@ for name,url in sources.items():
  try:
   request=urllib.request.Request(url,headers={"User-Agent":"ClimateIntelligenceHub-SourceCheck/1.0","Accept":"application/json"})
   with urllib.request.urlopen(request,timeout=25) as response:
+   cors=response.headers.get("Access-Control-Allow-Origin","")
    data=json.load(response)
+  if cors!="*" and "localhost" not in cors and "github.io" not in cors:
+   raise RuntimeError("Missing browser CORS permission (Access-Control-Allow-Origin): "+repr(cors))
   if name=="City geocoding":ok=bool(data.get("results"))
   elif name=="ERA5 historical":ok=bool(data.get("daily",{}).get("time"))
   elif name=="Modeled AQI":ok=data.get("current",{}).get("us_aqi") is not None
