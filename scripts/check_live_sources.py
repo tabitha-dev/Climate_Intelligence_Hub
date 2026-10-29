@@ -10,7 +10,7 @@ sources={
 results={}
 for name,url in sources.items():
  try:
-  request=urllib.request.Request(url,headers={"User-Agent":"ClimateIntelligenceHub-SourceCheck/1.0","Accept":"application/json"})
+  request=urllib.request.Request(url,headers={"User-Agent":"ClimateIntelligenceHub-SourceCheck/1.0","Accept":"application/json","Origin":"https://tabitha-dev.github.io"})
   with urllib.request.urlopen(request,timeout=25) as response:
    cors=response.headers.get("Access-Control-Allow-Origin","")
    data=json.load(response)
