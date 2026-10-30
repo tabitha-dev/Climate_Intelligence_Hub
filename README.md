@@ -4,6 +4,7 @@ A modern, accessible, source-first climate education dashboard. Built with **HTM
 
 **Live site:** https://tabitha-dev.github.io/Climate_Intelligence_Hub/  
 **Source:** https://github.com/tabitha-dev/Climate_Intelligence_Hub
+**Author and related work:** [Tabitha Khadse's engineering portfolio](https://code.tabitha.dev/) includes the Climate Intelligence Hub alongside other accessibility-focused data visualizations.
 
 ## What you can explore
 
